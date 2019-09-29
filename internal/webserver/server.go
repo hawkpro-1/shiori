@@ -64,7 +64,7 @@ func ServeApp(cfg Config) error {
 	router.POST(jp("/api/logout"), hdl.apiLogout)
 	router.GET(jp("/api/bookmarks"), hdl.apiGetBookmarks)
 	router.GET(jp("/api/tags"), hdl.apiGetTags)
-	router.PUT(jp("/api/tag"), hdl.apiRenameTag)
+	router.PUT(jp("/api/tags"), hdl.apiRenameTag)
 	router.POST(jp("/api/bookmarks"), hdl.apiInsertBookmark)
 	router.DELETE(jp("/api/bookmarks"), hdl.apiDeleteBookmark)
 	router.PUT(jp("/api/bookmarks"), hdl.apiUpdateBookmark)
