@@ -1,0 +1,156 @@
+From 6d09189bd80247c5fad218375ca11b0acf229fa9 Mon Sep 17 00:00:00 2001
+From: soulteary <soulteary@gmail.com>
+Date: Fri, 7 May 2021 15:55:49 +0800
+Subject: [PATCH] code optimization
+
+---
+ internal/webserver/handler-api-ext.go |  5 +++--
+ internal/webserver/handler-api.go     | 10 +++++-----
+ internal/webserver/handler-ui.go      |  4 ++--
+ internal/webserver/handler.go         |  2 +-
+ internal/webserver/server.go          |  2 +-
+ internal/webserver/utils.go           |  2 +-
+ 6 files changed, 13 insertions(+), 12 deletions(-)
+
+diff --git a/internal/webserver/handler-api-ext.go b/internal/webserver/handler-api-ext.go
+index adec32d..f3e2c33 100644
+--- a/internal/webserver/handler-api-ext.go
++++ b/internal/webserver/handler-api-ext.go
+@@ -7,6 +7,7 @@ import (
+ 	"io"
+ 	"net/http"
+ 	"os"
++	"log"
+ 	fp "path/filepath"
+ 	"strconv"
+ 
+@@ -90,7 +91,7 @@ func (h *handler) apiInsertViaExtension(w http.ResponseWriter, r *http.Request,
+ 			}
+ 
+ 			if err != nil && isFatalErr {
+-				fmt.Errorf("failed to process bookmark: %v", err)
++				log.Printf("failed to process bookmark: %v", err)
+ 				return
+ 			}
+ 		}
+@@ -98,7 +99,7 @@ func (h *handler) apiInsertViaExtension(w http.ResponseWriter, r *http.Request,
+ 		// Save bookmark to database
+ 		results, err := h.DB.SaveBookmarks(book)
+ 		if err != nil || len(results) == 0 {
+-			fmt.Errorf("failed to save bookmark: %v", err)
++			log.Printf("failed to save bookmark: %v", err)
+ 			return
+ 		}
+ 	}()
+diff --git a/internal/webserver/handler-api.go b/internal/webserver/handler-api.go
+index adc7ece..4b14aab 100644
+--- a/internal/webserver/handler-api.go
++++ b/internal/webserver/handler-api.go
+@@ -6,6 +6,7 @@ import (
+ 	"math"
+ 	"net/http"
+ 	"os"
++	"log"
+ 	"path"
+ 	fp "path/filepath"
+ 	"strconv"
+@@ -277,7 +278,7 @@ func (h *handler) apiInsertBookmark(w http.ResponseWriter, r *http.Request, ps h
+ 			content.Close()
+ 
+ 			if err != nil && isFatalErr {
+-				fmt.Errorf("failed to process bookmark: %v", err)
++				log.Printf("failed to process bookmark: %v", err)
+ 				return
+ 			}
+ 		}
+@@ -290,7 +291,7 @@ func (h *handler) apiInsertBookmark(w http.ResponseWriter, r *http.Request, ps h
+ 		// Save bookmark to database
+ 		results, err := h.DB.SaveBookmarks(book)
+ 		if err != nil || len(results) == 0 {
+-			fmt.Errorf("failed to save bookmark: %v", err)
++			log.Printf("failed to save bookmark: %v", err)
+ 			return
+ 		}
+ 	}()
+@@ -341,7 +342,7 @@ func (h *handler) apiUpdateBookmark(w http.ResponseWriter, r *http.Request, ps h
+ 
+ 	// Validate input
+ 	if request.Title == "" {
+-		panic(fmt.Errorf("Title must not empty"))
++		panic(fmt.Errorf("title must not empty"))
+ 	}
+ 
+ 	// Get existing bookmark from database
+@@ -687,10 +688,9 @@ func (h *handler) apiDeleteAccount(w http.ResponseWriter, r *http.Request, ps ht
+ 	checkError(err)
+ 
+ 	// Delete user's sessions
+-	userSessions := []string{}
+ 	for _, username := range usernames {
+ 		if val, found := h.UserCache.Get(username); found {
+-			userSessions = val.([]string)
++			userSessions := val.([]string)
+ 			for _, session := range userSessions {
+ 				h.SessionCache.Delete(session)
+ 			}
+diff --git a/internal/webserver/handler-ui.go b/internal/webserver/handler-ui.go
+index d398fee..1950de3 100644
+--- a/internal/webserver/handler-ui.go
++++ b/internal/webserver/handler-ui.go
+@@ -93,7 +93,7 @@ func (h *handler) serveBookmarkContent(w http.ResponseWriter, r *http.Request, p
+ 	// Get bookmark in database
+ 	bookmark, exist := h.DB.GetBookmark(id, "")
+ 	if !exist {
+-		panic(fmt.Errorf("Bookmark not found"))
++		panic(fmt.Errorf("bookmark not found"))
+ 	}
+ 
+ 	// If it's not public, make sure session still valid
+@@ -235,7 +235,7 @@ func (h *handler) serveBookmarkArchive(w http.ResponseWriter, r *http.Request, p
+ 
+ 	bookmark, exist := h.DB.GetBookmark(id, "")
+ 	if !exist {
+-		panic(fmt.Errorf("Bookmark not found"))
++		panic(fmt.Errorf("bookmark not found"))
+ 	}
+ 
+ 	// If it's not public, make sure session still valid
+diff --git a/internal/webserver/handler.go b/internal/webserver/handler.go
+index 3b78432..0175c3b 100644
+--- a/internal/webserver/handler.go
++++ b/internal/webserver/handler.go
+@@ -46,7 +46,7 @@ func (h *handler) prepareSessionCache() {
+ }
+ 
+ func (h *handler) prepareArchiveCache() {
+-	h.ArchiveCache.OnEvicted(func(key string, data interface{}) {
++	h.ArchiveCache.OnEvicted(func(_ string, data interface{}) {
+ 		archive := data.(*warc.Archive)
+ 		archive.Close()
+ 	})
+diff --git a/internal/webserver/server.go b/internal/webserver/server.go
+index 5525243..175035e 100644
+--- a/internal/webserver/server.go
++++ b/internal/webserver/server.go
+@@ -79,7 +79,7 @@ func ServeApp(cfg Config) error {
+ 	router.DELETE(jp("/api/accounts"), hdl.apiDeleteAccount)
+ 
+ 	// Route for panic
+-	router.PanicHandler = func(w http.ResponseWriter, r *http.Request, arg interface{}) {
++	router.PanicHandler = func(w http.ResponseWriter, _ *http.Request, arg interface{}) {
+ 		http.Error(w, fmt.Sprint(arg), 500)
+ 	}
+ 
+diff --git a/internal/webserver/utils.go b/internal/webserver/utils.go
+index 065351e..4585dea 100644
+--- a/internal/webserver/utils.go
++++ b/internal/webserver/utils.go
+@@ -85,7 +85,7 @@ func redirectPage(w http.ResponseWriter, r *http.Request, url string) {
+ 	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+ 	w.Header().Set("Pragma", "no-cache")
+ 	w.Header().Set("Expires", "0")
+-	http.Redirect(w, r, url, 301)
++	http.Redirect(w, r, url, http.StatusMovedPermanently)
+ }
+ 
+ func assetExists(filePath string) bool {

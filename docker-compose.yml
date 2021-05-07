@@ -1,0 +1,12 @@
+version: "3"
+services:
+  shiori:
+    container_name: shiori
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - "./Data:/srv/shiori"
+    environment:
+      - SHIORI_DEFAULT_USER=hawk
+      - SHIORI_DEFAULT_PASS=1234

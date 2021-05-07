@@ -1,7 +1,6 @@
 package webserver
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"path"
@@ -80,14 +79,8 @@ func ServeApp(cfg Config) error {
 	router.DELETE(jp("/api/accounts"), hdl.apiDeleteAccount)
 
 	// Route for panic
-	router.PanicHandler = func(w http.ResponseWriter, r *http.Request, arg interface{}) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-
-		resp := map[string]interface{}{
-			"error": arg.(error).Error(),
-		}
-		_ = json.NewEncoder(w).Encode(&resp)
+	router.PanicHandler = func(w http.ResponseWriter, _ *http.Request, arg interface{}) {
+		http.Error(w, fmt.Sprint(arg), 500)
 	}
 
 	// Create server
