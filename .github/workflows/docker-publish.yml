@@ -3,7 +3,9 @@ name: ci
 on:
   push:
   
-permissions: write-all
+permissions:
+  packages: write
+  contents: read
 
 jobs:
   docker:
