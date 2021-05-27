@@ -104,7 +104,7 @@ BEGIN
        ) THEN
       -- do nothing
    ELSE
-        CREATE TRIGGER tsvectorupdate2 BEFORE INSERT OR UPDATE ON bookmark FOR EACH ROW EXECUTE PROCEDURE card_tsvector_trigger();
+        CREATE TRIGGER tsvectorupdate BEFORE INSERT OR UPDATE ON bookmark FOR EACH ROW EXECUTE PROCEDURE card_tsvector_trigger();
    END IF;
 END
 $do$;`)
