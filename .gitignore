@@ -1,7 +1,8 @@
 # Exclude config file
 .vscode/
 *.toml
-
+Data/
+bookmarks.html
 # Exclude executable file
 /shiori*
 

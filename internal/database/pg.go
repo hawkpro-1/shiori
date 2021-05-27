@@ -81,9 +81,9 @@ func OpenPGDatabase(connString string) (pgDB *PGDatabase, err error) {
 
 	tx.MustExec(`ALTER TABLE bookmark ADD COLUMN IF NOT EXISTS  document_with_weights tsvector`)
 	tx.MustExec(`UPDATE bookmark SET document_with_weights = setweight(to_tsvector(title),'A') || setweight(to_tsvector(excerpt),'B') || setweight(to_tsvector(url),'C' ) || setweight(to_tsvector(content),'D' )`)
-    tx.MustExec(`CREATE INDEX IF NOT EXISTS document_with_weights ON bookmark USING GIN (document_with_weights)`)
+	tx.MustExec(`CREATE INDEX IF NOT EXISTS document_with_weights ON bookmark USING GIN (document_with_weights)`)
 
-    tx.MustExec(`CREATE OR REPLACE FUNCTION card_tsvector_trigger() RETURNS trigger AS $$
+	tx.MustExec(`CREATE OR REPLACE FUNCTION card_tsvector_trigger() RETURNS trigger AS $$
 begin
   new.document_with_weights :=
   setweight(to_tsvector('english', coalesce(new.title, '')), 'A')
@@ -94,7 +94,7 @@ begin
 end
 $$ LANGUAGE plpgsql;`)
 
-tx.MustExec(`DO
+	tx.MustExec(`DO
 $do$
 BEGIN
    IF EXISTS (
@@ -104,7 +104,7 @@ BEGIN
        ) THEN
       -- do nothing
    ELSE
-        CREATE TRIGGER tsvectorupdate2 BEFORE INSERT OR UPDATE ON bookmark FOR EACH ROW EXECUTE PROCEDURE card_tsvector_trigger();
+        CREATE TRIGGER tsvectorupdate BEFORE INSERT OR UPDATE ON bookmark FOR EACH ROW EXECUTE PROCEDURE card_tsvector_trigger();
    END IF;
 END
 $do$;`)
@@ -253,7 +253,7 @@ func (db *PGDatabase) GetBookmarks(opts GetBookmarksOptions) ([]model.Bookmark, 
 	}
 
 	query := `SELECT ` + strings.Join(columns, ",") + `
-		FROM bookmark WHERE TRUE `
+		FROM bookmark WHERE TRUE`
 
 	// Add where clause
 	arg := map[string]interface{}{}
@@ -266,9 +266,9 @@ func (db *PGDatabase) GetBookmarks(opts GetBookmarksOptions) ([]model.Bookmark, 
 
 	// Add where clause for search keyword
 	if opts.Keyword != "" {
-        query += `AND document_with_weights @@ plainto_tsquery(:kw) order by ts_rank(document_with_weights, plainto_tsquery(:kw)) desc `
+		query += ` AND document_with_weights @@ plainto_tsquery(:kw)`
 
-        arg["kw"] = opts.Keyword 
+		arg["kw"] = opts.Keyword
 	}
 
 	// Add where clause for tags.
@@ -325,14 +325,18 @@ func (db *PGDatabase) GetBookmarks(opts GetBookmarksOptions) ([]model.Bookmark, 
 	}
 
 	// Add order clause
-	// switch opts.OrderMethod {
-	// case ByLastAdded:
-	// 	query += ` ORDER BY id DESC`
-	// case ByLastModified:
-	// 	query += ` ORDER BY modified DESC`
-	// default:
-	// 	query += ` ORDER BY id`
-	// }
+	switch opts.OrderMethod {
+	case ByLastAdded:
+		if opts.Keyword != "" {
+			query += ` ORDER BY ts_rank(document_with_weights, plainto_tsquery(:kw)) DESC`
+		} else {
+			query += ` ORDER BY id DESC`
+		}
+	case ByLastModified:
+		query += ` ORDER BY modified DESC`
+	default:
+		query += ` ORDER BY id`
+	}
 
 	if opts.Limit > 0 && opts.Offset >= 0 {
 		query += ` LIMIT :limit OFFSET :offset`
@@ -346,9 +350,9 @@ func (db *PGDatabase) GetBookmarks(opts GetBookmarksOptions) ([]model.Bookmark, 
 	if err != nil {
 		return nil, fmt.Errorf("failed to expand query: %v", err)
 	}
-    log.Printf(query)
+	log.Printf(query)
 	query = db.Rebind(query)
-    log.Printf(query)
+	log.Printf(query)
 
 	// Fetch bookmarks
 	bookmarks := []model.Bookmark{}
