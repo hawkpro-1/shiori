@@ -1,4 +1,4 @@
-name: ci
+name: tag-test
 
 on:
   push:
@@ -10,12 +10,12 @@ permissions:
   contents: read
 
 jobs:
-  docker:
+  tag-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Version
-        run: export DOCKER_TAG=$(cat VERSION)
+        run: export DOCKER_TAG=`cat VERSION`
       - name: Print
         run: echo $DOCKER_TAG
