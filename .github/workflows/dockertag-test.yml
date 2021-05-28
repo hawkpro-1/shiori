@@ -8,8 +8,12 @@ on:
 jobs:
   tag-test:
     runs-on: ubuntu-latest
-
+    
+    
     steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    
     - name: Set variables
       run: |
         VER=$(cat VERSION)
