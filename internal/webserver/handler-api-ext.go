@@ -57,7 +57,7 @@ func (h *handler) apiInsertViaExtension(w http.ResponseWriter, r *http.Request, 
 		}
 	}
 
-	go func(){
+	go func() {
 		// Since we are using extension, the extension might send the HTML content
 		// so no need to download it again here. However, if it's empty, it might be not HTML file
 		// so we download it here.

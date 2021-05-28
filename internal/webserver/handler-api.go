@@ -78,10 +78,10 @@ func (h *handler) apiLogin(w http.ResponseWriter, r *http.Request, ps httprouter
 	defaultUser, _ := os.LookupEnv("SHIORI_DEFAULT_USER")
 	defaultPass, _ := os.LookupEnv("SHIORI_DEFAULT_PASS")
 
-	if(defaultUser == "") {
+	if defaultUser == "" {
 		defaultUser = "shiori"
 	}
-	if(defaultPass == ""){
+	if defaultPass == "" {
 		defaultPass = "gopher"
 	}
 

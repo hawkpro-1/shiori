@@ -115,21 +115,21 @@ func (h *handler) getSessionID(r *http.Request) string {
 func (h *handler) validateSession(r *http.Request) error {
 	sessionID := h.getSessionID(r)
 	if sessionID == "" {
-        logrus.Error("session is not exist")
+		logrus.Error("session is not exist")
 		return fmt.Errorf("session is not exist")
 	}
 
 	// Make sure session is not expired yet
 	val, found := h.SessionCache.Get(sessionID)
 	if !found {
-        logrus.Error("session has been expired")
+		logrus.Error("session has been expired")
 		return fmt.Errorf("session has been expired")
 	}
 
 	// If this is not get request, make sure it's owner
 	if r.Method != "" && r.Method != "GET" {
 		if account := val.(model.Account); !account.Owner {
-            logrus.Error("account level is not sufficient")
+			logrus.Error("account level is not sufficient")
 			return fmt.Errorf("account level is not sufficient")
 		}
 	}
