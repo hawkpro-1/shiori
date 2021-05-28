@@ -1,5 +1,5 @@
 .git*
-docs
+docs/
 *.md
 Dockerfile
 LICENSE
