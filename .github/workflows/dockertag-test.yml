@@ -16,6 +16,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Version
-        run: export DOCKER_TAG=`cat VERSION`
+        run: export DOCKERTAG=`cat VERSION`
       - name: Print
-        run: echo $DOCKER_TAG
+        run: echo $DOCKERTAG
