@@ -1,0 +1,21 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - test
+  
+permissions:
+  packages: write
+  contents: read
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Version
+        run: export DOCKER_TAG=$(cat VERSION)
+      - name: Print
+        run: echo $DOCKER_TAG
