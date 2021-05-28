@@ -9,7 +9,6 @@ import (
 
 	"github.com/go-shiori/shiori/internal/model"
 	"github.com/jmoiron/sqlx"
-	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 )
 
