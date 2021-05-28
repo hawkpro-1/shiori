@@ -14,6 +14,8 @@ import (
 	"regexp"
 	"strings"
 	"syscall"
+
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -155,6 +157,7 @@ func checkError(err error) {
 		return
 	}
 
+    logrus.Error(err)
 	// Check for a broken connection, as it is not really a
 	// condition that warrants a panic stack trace.
 	if ne, ok := err.(*net.OpError); ok {

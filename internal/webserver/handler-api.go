@@ -18,6 +18,7 @@ import (
 	"github.com/go-shiori/shiori/internal/model"
 	"github.com/gofrs/uuid"
 	"github.com/julienschmidt/httprouter"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -281,7 +282,7 @@ func (h *handler) apiInsertBookmark(w http.ResponseWriter, r *http.Request, ps h
 			content.Close()
 
 			if err != nil && isFatalErr {
-				fmt.Errorf("failed to process bookmark: %v", err)
+				logrus.Errorf("failed to process bookmark: %v", err)
 				return
 			}
 		}
@@ -294,7 +295,7 @@ func (h *handler) apiInsertBookmark(w http.ResponseWriter, r *http.Request, ps h
 		// Save bookmark to database
 		results, err := h.DB.SaveBookmarks(book)
 		if err != nil || len(results) == 0 {
-			fmt.Errorf("failed to save bookmark: %v", err)
+			logrus.Errorf("failed to save bookmark: %v", err)
 			return
 		}
 	}()

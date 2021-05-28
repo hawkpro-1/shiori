@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/go-shiori/shiori/internal/model"
+	"github.com/sirupsen/logrus"
 )
 
 // OrderMethod is the order method for getting bookmarks
@@ -77,6 +78,7 @@ type DB interface {
 
 func checkError(err error) {
 	if err != nil && err != sql.ErrNoRows {
+		logrus.Error(err)
 		panic(err)
 	}
 }

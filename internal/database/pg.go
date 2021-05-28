@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-shiori/shiori/internal/model"
 	"github.com/jmoiron/sqlx"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -153,7 +154,7 @@ func (db *PGDatabase) SaveBookmarks(bookmarks ...model.Bookmark) (result []model
 	stmtGetTag, err := tx.Preparex(`SELECT id FROM tag WHERE name = $1`)
 	checkError(err)
 
-	stmtInsertTag, err := tx.Preparex(`INSERT INTO tag (name) VALUES ($1) RETURNING id`)
+	stmtInsertTag, err := tx.Preparex(`INSERT INTO tag(name) VALUES($1) RETURNING id`)
 	checkError(err)
 
 	stmtInsertBookTag, err := tx.Preparex(`INSERT INTO bookmark_tag
@@ -214,11 +215,9 @@ func (db *PGDatabase) SaveBookmarks(bookmarks ...model.Bookmark) (result []model
 					var tagID64 int64
 					err = stmtInsertTag.Get(&tagID64, tagName)
 					checkError(err)
-
 					tag.ID = int(tagID64)
 				}
-
-				stmtInsertBookTag.Exec(tag.ID, book.ID)
+				stmtInsertBookTag.MustExec(tag.ID, book.ID)
 			}
 
 			newTags = append(newTags, tag)
