@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"os"
+	"strconv"
 	"strings"
 
 	"github.com/go-shiori/shiori/internal/webserver"
@@ -27,7 +29,11 @@ func serveCmd() *cobra.Command {
 
 func serveHandler(cmd *cobra.Command, args []string) {
 	// Get flags value
-	port, _ := cmd.Flags().GetInt("port")
+	var port int
+	port, _ = cmd.Flags().GetInt("port")
+	if os.Getenv("PORT") != "" {
+		port, _ = strconv.Atoi(os.Getenv("PORT"))
+	}
 	address, _ := cmd.Flags().GetString("address")
 	rootPath, _ := cmd.Flags().GetString("webroot")
 
