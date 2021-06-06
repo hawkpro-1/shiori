@@ -20,7 +20,7 @@ func serveCmd() *cobra.Command {
 		Run: serveHandler,
 	}
 
-	cmd.Flags().IntP("port", "p", 8080, "Port used by the server")
+	cmd.Flags().IntP("port", "p", 80, "Port used by the server")
 	cmd.Flags().StringP("address", "a", "", "Address the server listens to")
 	cmd.Flags().StringP("webroot", "r", "/", "Root path that used by server")
 
